@@ -1,23 +1,24 @@
-from flask import render_template, jsonify
 from app import app
+from flask import jsonify,request,url_for
 from app.models import Image
-
-@app.route('/')
-@app.route('/index')
-def index():
-    user = {'username': 'Miguel'}
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
-    return render_template('index.html', title='Home', user=user, posts=posts)
+from app.errors import bad_request
+from app import db
 
 @app.route('/image/<int:id>',methods=['Get'])
 def get_image(id):
     return jsonify(Image.query.get_or_404(id).to_dict())
+
+
+@app.route('/image/',methods=['Post'])
+def post_image():
+    data = request.get_json() or {}
+    if 'image' not in data:
+        return bad_request('image json needs to be in data ')
+    image = Image()
+    image.from_dict(data, new_user=True)
+    db.session.add(image)
+    db.session.commit()
+    response = jsonify(image.to_dict())
+    response.status_code = 201
+    response.headers['Location'] = url_for('api.get_user', id=image.id)
+    return response
