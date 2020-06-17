@@ -5,14 +5,15 @@ from app import db
 
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    image = db.Column(db.LargeBinary)
+    image_url = db.Column(db.String(1000))
+    image_filename = db.Column(db.String(1000))
 
     def to_dict(self):
-        data = {'id': self.id,'image':self.image}
+        data = {'id': self.id,'image_url':self.image_url,'image_filename':self.image_filename}
         return data
 
-    def from_dict(self, data, new_user=False):
-        for field in ['image']:
+    def from_dict(self, data):
+        for field in ['image_url','image_filename']:
             if field in data:
                 setattr(self, field, data[field])
 
